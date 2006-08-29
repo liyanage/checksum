@@ -6,7 +6,9 @@
     IBOutlet NSTextField *checksumField;
     IBOutlet NSTextField *filenameField;
     IBOutlet NSPopUpButton *popup;
+	IBOutlet NSButton *openFile;
     IBOutlet NSWindow *window;
+	IBOutlet NSProgressIndicator *indicator;
 	NSArray *algorithmTags;
 	NSString *filename;
 	int chosenAlgorithm;
