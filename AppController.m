@@ -2,8 +2,7 @@
 
 @implementation AppController
 
-- (id)init
-{
+- (id)init {
 	if (self = [super init]) {
 		algorithmTags = [[NSArray arrayWithObjects:@"-md5", @"-md4", @"-md2", @"-sha1", @"-sha", @"-mdc2", @"-ripemd160", nil] retain];
 	}
@@ -13,31 +12,38 @@
 	return self;
 }
 
-- (void)awakeFromNib
-{
+- (void)awakeFromNib {
 	NSArray *dragTypes = [NSArray arrayWithObjects:NSFilenamesPboardType, nil];
-
 	chosenAlgorithm = [[popup selectedItem] tag];
-	
 	[window registerForDraggedTypes:dragTypes];
 }
 
 
-- (IBAction)chooseAlgorithm:(id)sender
-{
+// enable copy: menu command only when a checksum is available
+- (BOOL)validateMenuItem:(NSMenuItem *)item {
+	if ([item action] != @selector(copy:)) return [super validateMenuItem:item];
+	return [[checksumField stringValue] length] > 0;
+}
+
+- (IBAction)copy:(id)sender {
+	NSPasteboard *pboard = [NSPasteboard generalPasteboard];
+	[pboard declareTypes:[NSArray arrayWithObject:NSStringPboardType] owner:nil];
+	[pboard setString:[checksumField stringValue] forType:NSStringPboardType];
+}
+
+
+- (IBAction)chooseAlgorithm:(id)sender {
+	if (!filename) return;
 	[checksumField setStringValue:@""];
 	chosenAlgorithm = [[sender selectedItem] tag];
-
 	[self processFile];
 	[self updateUI];
 }
 
-- (IBAction)openFile:(id)sender
-{	
+
+- (IBAction)openFile:(id)sender {	
 	NSOpenPanel *panel = [NSOpenPanel openPanel];
-	
 	[panel setTreatsFilePackagesAsDirectories:YES];
-	
 	[panel beginSheetForDirectory:nil
 							 file:nil
 							types:nil
@@ -47,31 +53,27 @@
 					  contextInfo:nil];
 }
 
-- (void)openPanelDidEnd:(NSOpenPanel *)thePanel returnCode:(int)returnCode  contextInfo:(void  *)contextInfo
-{
+
+- (void)openPanelDidEnd:(NSOpenPanel *)thePanel returnCode:(int)returnCode  contextInfo:(void  *)contextInfo {
 	[thePanel close];
-	
-	if (returnCode != NSOKButton) {
-		return;
-	}
+	if (returnCode != NSOKButton) return
 	
 	[filenameField setStringValue:@""];
 	[checksumField setStringValue:@""];
 	
 	filename = [[thePanel filenames] objectAtIndex:0];
-	
 	[filenameField setStringValue:filename];
 	
 	[NSThread detachNewThreadSelector:@selector(processFile) toTarget:self withObject:nil];
 }
 
-- (IBAction)showHelp:(id)sender
-{
+
+- (IBAction)showHelp:(id)sender {
 	NSLog(@"show help");
 }
 
-- (void)processFile
-{
+
+- (void)processFile {
 	[popup setEnabled:NO];
 	[openFile setEnabled:NO];
 	
@@ -84,11 +86,7 @@
 	NSRange firstSpace;
 	
 	[indicator startAnimation:nil];
-
-	if (filename == nil) {
-		return;
-	}
-
+	if (filename == nil) return;
 	
     [task setStandardOutput: [NSPipe pipe]];
     [task setStandardError: [task standardOutput]];
@@ -107,8 +105,7 @@
 
     [task launch];
 
-	while ((data = [[[task standardOutput] fileHandleForReading] availableData]) && [data length])
-	{
+	while ((data = [[[task standardOutput] fileHandleForReading] availableData]) && [data length]) {
 		[output appendString: [[[NSString alloc] initWithData:data encoding:NSASCIIStringEncoding] autorelease]];
 	}
 
@@ -134,8 +131,8 @@
 	[threadPool release];
 }
 
-- (unsigned int)draggingEntered:(id <NSDraggingInfo>)sender
-{	
+
+- (unsigned int)draggingEntered:(id <NSDraggingInfo>)sender {	
 	NSView *view = [window contentView];
 
 	if (![self dragIsFile:sender]) {
@@ -155,20 +152,17 @@
 	return NSDragOperationGeneric;
 }
 
-- (BOOL)performDragOperation:(id <NSDraggingInfo>)sender
-{
+
+- (BOOL)performDragOperation:(id <NSDraggingInfo>)sender {
 	filename = [self getFileForDrag:sender];
-
 	[[window contentView] setNeedsDisplay:YES];
-
 	[self processFile];
 	[self updateUI];
-	
 	return YES;
 }
 
-- (void)updateUI
-{
+
+- (void)updateUI {
 	if (filename != nil) {
 		[filenameField setStringValue:filename];
 	}
@@ -176,21 +170,15 @@
 }
 
 
-- (BOOL)dragIsFile:(id <NSDraggingInfo>)sender
-{
-	BOOL isDirectory;
-	
+- (BOOL)dragIsFile:(id <NSDraggingInfo>)sender {
 	NSString *dragFilename = [self getFileForDrag:sender];
-
+	BOOL isDirectory;
 	[[NSFileManager defaultManager] fileExistsAtPath:dragFilename isDirectory:&isDirectory];
-
 	return !isDirectory;
 }
 
 
-
-- (NSString *)getFileForDrag:(id <NSDraggingInfo>)sender
-{
+- (NSString *)getFileForDrag:(id <NSDraggingInfo>)sender {
 	NSPasteboard *pb = [sender draggingPasteboard];
 	NSString *availableType = [pb availableTypeFromArray:[NSArray arrayWithObjects:NSFilenamesPboardType, nil]];
 	NSString *dragFilename;
@@ -203,14 +191,12 @@
 }
 
 
-
-- (void)draggingExited:(id <NSDraggingInfo>)sender
-{
+- (void)draggingExited:(id <NSDraggingInfo>)sender {
 	[[window contentView] setNeedsDisplay:YES];
 }
 
-- (void)dealloc
-{
+
+- (void)dealloc {
 	[algorithmTags release];
 	[super dealloc];
 }
