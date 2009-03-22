@@ -2,17 +2,8 @@
 
 @implementation AppController
 
-- (id)init {
-	if (self = [super init]) {
-		algorithmTags = [[NSArray arrayWithObjects:@"-md5", @"-md4", @"-md2", @"-sha1", @"-sha", @"-mdc2", @"-ripemd160", nil] retain];
-	}
-
-	filename = nil;
-
-	return self;
-}
-
 - (void)awakeFromNib {
+	algorithmTags = [[NSArray arrayWithObjects:@"-md5", @"-md4", @"-md2", @"-sha1", @"-sha", @"-mdc2", @"-ripemd160", nil] retain];
 	NSArray *dragTypes = [NSArray arrayWithObjects:NSFilenamesPboardType, nil];
 	chosenAlgorithm = [[popup selectedItem] tag];
 	[window registerForDraggedTypes:dragTypes];
@@ -21,9 +12,10 @@
 
 // enable copy: menu command only when a checksum is available
 - (BOOL)validateMenuItem:(NSMenuItem *)item {
-	if ([item action] != @selector(copy:)) return [super validateMenuItem:item];
+	if ([item action] != @selector(copy:)) return YES;
 	return [[checksumField stringValue] length] > 0;
 }
+
 
 - (IBAction)copy:(id)sender {
 	NSPasteboard *pboard = [NSPasteboard generalPasteboard];

@@ -207,7 +207,7 @@
 /* End PBXVariantGroup section */
 
 /* Begin XCBuildConfiguration section */
-		1BD6BE750AA41F2900D8C16E /* Development */ = {
+		1BD6BE750AA41F2900D8C16E /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				COPY_PHASE_STRIP = NO;
@@ -233,9 +233,9 @@
 				WRAPPER_EXTENSION = app;
 				ZERO_LINK = YES;
 			};
-			name = Development;
+			name = Debug;
 		};
-		1BD6BE760AA41F2900D8C16E /* Deployment */ = {
+		1BD6BE760AA41F2900D8C16E /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				COPY_PHASE_STRIP = YES;
@@ -258,56 +258,25 @@
 				WRAPPER_EXTENSION = app;
 				ZERO_LINK = NO;
 			};
-			name = Deployment;
+			name = Release;
 		};
-		1BD6BE770AA41F2900D8C16E /* Default */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				FRAMEWORK_SEARCH_PATHS = "";
-				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
-				HEADER_SEARCH_PATHS = "";
-				INFOPLIST_FILE = Info.plist;
-				INSTALL_PATH = "$(HOME)/Applications";
-				LIBRARY_SEARCH_PATHS = "";
-				OTHER_CFLAGS = "";
-				OTHER_LDFLAGS = "";
-				PRODUCT_NAME = Checksum;
-				SECTORDER_FLAGS = "";
-				WARNING_CFLAGS = (
-					"-Wmost",
-					"-Wno-four-char-constants",
-					"-Wno-unknown-pragmas",
-				);
-				WRAPPER_EXTENSION = app;
-			};
-			name = Default;
-		};
-		CAF5D35C0AA37CE700E92878 /* Development */ = {
+		CAF5D35C0AA37CE700E92878 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ARCHS = "$(ARCHS_STANDARD_32_64_BIT_PRE_XCODE_3_1)";
 				ARCHS_STANDARD_32_64_BIT_PRE_XCODE_3_1 = "ppc i386 ppc64 x86_64";
 				SDKROOT = /Developer/SDKs/MacOSX10.5.sdk;
 			};
-			name = Development;
+			name = Debug;
 		};
-		CAF5D35D0AA37CE700E92878 /* Deployment */ = {
+		CAF5D35D0AA37CE700E92878 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ARCHS = "$(ARCHS_STANDARD_32_64_BIT_PRE_XCODE_3_1)";
 				ARCHS_STANDARD_32_64_BIT_PRE_XCODE_3_1 = "ppc i386 ppc64 x86_64";
 				SDKROOT = /Developer/SDKs/MacOSX10.5.sdk;
 			};
-			name = Deployment;
-		};
-		CAF5D35E0AA37CE700E92878 /* Default */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				ARCHS = "$(ARCHS_STANDARD_32_64_BIT_PRE_XCODE_3_1)";
-				ARCHS_STANDARD_32_64_BIT_PRE_XCODE_3_1 = "ppc i386 ppc64 x86_64";
-				SDKROOT = /Developer/SDKs/MacOSX10.5.sdk;
-			};
-			name = Default;
+			name = Release;
 		};
 /* End XCBuildConfiguration section */
 
@@ -315,22 +284,20 @@
 		1BD6BE740AA41F2900D8C16E /* Build configuration list for PBXNativeTarget "Checksum" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				1BD6BE750AA41F2900D8C16E /* Development */,
-				1BD6BE760AA41F2900D8C16E /* Deployment */,
-				1BD6BE770AA41F2900D8C16E /* Default */,
+				1BD6BE750AA41F2900D8C16E /* Debug */,
+				1BD6BE760AA41F2900D8C16E /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Default;
+			defaultConfigurationName = Release;
 		};
 		CAF5D35B0AA37CE700E92878 /* Build configuration list for PBXProject "Checksum" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				CAF5D35C0AA37CE700E92878 /* Development */,
-				CAF5D35D0AA37CE700E92878 /* Deployment */,
-				CAF5D35E0AA37CE700E92878 /* Default */,
+				CAF5D35C0AA37CE700E92878 /* Debug */,
+				CAF5D35D0AA37CE700E92878 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Default;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};
