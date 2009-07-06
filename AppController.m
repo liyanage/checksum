@@ -51,7 +51,7 @@
 	if (returnCode != NSOKButton) return;
 	[checksumField setStringValue:@""];
 	filename = [[thePanel filenames] objectAtIndex:0];
-	[NSThread detachNewThreadSelector:@selector(processFile) toTarget:self withObject:nil];
+	[self processFile];
 }
 
 
@@ -83,26 +83,25 @@
 
 #pragma mark hash calculation implementation
 
+//  UI update on main thread
 - (void)processFile {
-	[popup setEnabled:NO];
-	[openFile setEnabled:NO];
-	
-	NSAutoreleasePool *threadPool = [[NSAutoreleasePool alloc] init];
-	
-    NSTask *task = [[NSTask alloc] init];
-	
-    NSData *data;
-	NSMutableString *output = [[NSMutableString alloc] init];
-	NSRange firstSpace;
-	
-	[indicator startAnimation:nil];
 	if (filename == nil) return;
-	
+	[pathControl setEnabled:NO];
+	[popup setEnabled:NO];
+	[indicator startAnimation:self];
+	[checksumField setStringValue:@"calculating..."];
+	[self performSelectorInBackground:@selector(processFileBackground) withObject:nil];
+}
+
+
+//  calculation on background thread
+- (void)processFileBackground {
+	NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
+
+    NSTask *task = [[[NSTask alloc] init] autorelease];
     [task setStandardOutput: [NSPipe pipe]];
     [task setStandardError: [task standardOutput]];
-
     [task setLaunchPath:@"/usr/bin/env"];
-
 	[task setArguments:
 		[NSArray arrayWithObjects:
 			@"openssl",
@@ -112,32 +111,34 @@
 			nil
 		]
 	];
-
     [task launch];
 
+    NSData *data;
+	NSMutableString *output = [[[NSMutableString alloc] init] autorelease];
 	while ((data = [[[task standardOutput] fileHandleForReading] availableData]) && [data length]) {
 		[output appendString: [[[NSString alloc] initWithData:data encoding:NSASCIIStringEncoding] autorelease]];
 	}
 
     [task terminate];
 
-	firstSpace = [output rangeOfString:@"= "];
-	
+	NSRange firstSpace = [output rangeOfString:@"= "];
+	NSString *result = output;
 	if (firstSpace.location && firstSpace.length) {
-		[checksumField setStringValue:[output substringFromIndex:firstSpace.location + 2]];
-	} else {
-		[checksumField setStringValue:output];
+		result = [output substringFromIndex:firstSpace.location + 2];
 	}
+	
+	[self performSelectorOnMainThread:@selector(handleProcessFileResult:) withObject:result waitUntilDone:YES];
+	[pool release];
+}
 
-	[output release];
-	
-	[indicator stopAnimation:nil];
+
+//  UI update on main thread again
+- (void)handleProcessFileResult:(NSString *)result {
+	[checksumField setStringValue:result];
+	[indicator stopAnimation:self];
 	[self updateUI];
-	
 	[popup setEnabled:YES];
-	[openFile setEnabled:YES];
-	
-	[threadPool release];
+	[pathControl setEnabled:YES];
 }
 
 
@@ -157,7 +158,6 @@
 	[NSBezierPath strokeRect:[view bounds]];
 
 	[view unlockFocus];
-
 	[window flushWindow];
 	
 	return NSDragOperationGeneric;

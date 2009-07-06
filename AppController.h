@@ -6,7 +6,6 @@
     IBOutlet NSTextField *checksumField;
     IBOutlet NSTextField *filenameField;
     IBOutlet NSPopUpButton *popup;
-	IBOutlet NSButton *openFile;
     IBOutlet NSWindow *window;
 	IBOutlet NSProgressIndicator *indicator;
 	IBOutlet NSPathControl *pathControl;
@@ -17,6 +16,8 @@
 
 
 - (void)processFile;
+- (void)processFileBackground;
+- (void)handleProcessFileResult:(NSString *)result;
 - (void)updateUI;
 - (IBAction)chooseAlgorithm:(id)sender;
 - (IBAction)pathClicked:(NSPathControl *)sender;

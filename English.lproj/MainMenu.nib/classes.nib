@@ -17,8 +17,6 @@
 			<dict>
 				<key>chooseAlgorithm</key>
 				<string>id</string>
-				<key>openFile</key>
-				<string>id</string>
 				<key>pathClicked</key>
 				<string>NSPathControl</string>
 			</dict>
