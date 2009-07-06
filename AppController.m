@@ -2,6 +2,8 @@
 
 @implementation AppController
 
+@synthesize compareChecksum;
+
 
 #pragma mark NSNibAwaking protocol
 
@@ -11,6 +13,7 @@
 	chosenAlgorithm = [[popup selectedItem] tag];
 	[window registerForDraggedTypes:dragTypes];
 	pathControl.URL = [NSURL fileURLWithPath:[@"~/Desktop/" stringByExpandingTildeInPath]];
+	[self updateCompareExpanded];
 }
 
 
@@ -18,7 +21,17 @@
 
 - (void)dealloc {
 	[algorithmTags release];
+	[compareChecksum release];
 	[super dealloc];
+}
+
+
+- (void)setCompareChecksum:(NSString *)value {
+	if (compareChecksum != value) {
+		[compareChecksum release];
+		compareChecksum = [value copy];
+	}
+	[self updateUI];
 }
 
 
@@ -81,6 +94,13 @@
 }
 
 
+- (IBAction)toggleCompareView:(NSButton *)sender {
+	[self updateCompareExpanded];
+}
+
+
+
+
 #pragma mark hash calculation implementation
 
 //  UI update on main thread
@@ -134,6 +154,7 @@
 
 //  UI update on main thread again
 - (void)handleProcessFileResult:(NSString *)result {
+	result = [result stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
 	[checksumField setStringValue:result];
 	[indicator stopAnimation:self];
 	[self updateUI];
@@ -218,7 +239,47 @@
 	if (filename != nil) {
 		pathControl.URL = [NSURL fileURLWithPath:filename];
 	}
+	[self updateCompareExpanded];
+	[self checkCompareChecksum];
 }
 
+
+- (void)updateCompareExpanded {
+
+	BOOL buttonIsDisclosed = [expandButton intValue];
+	BOOL isExpanded = ![compareView isHidden];
+	if (buttonIsDisclosed == isExpanded) return;
+	
+	int delta = buttonIsDisclosed ? 30 : -30;
+
+	NSRect frame = window.frame;
+	frame.size.height += delta;
+	frame.origin.y -= delta;
+	[window setFrame:frame display:YES animate:YES];
+	
+	NSSize size = window.maxSize;
+	size.height += delta;
+	window.maxSize = size;
+
+	size = window.minSize;
+	size.height += delta;
+	window.minSize = size;
+	
+	[compareView setHidden:!buttonIsDisclosed];
+
+}
+
+
+- (void)checkCompareChecksum {
+	NSString *trimmed = [compareChecksum stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
+	// trimmed can be nil
+	if (![trimmed length]) {
+		[compareField setBackgroundColor:[NSColor whiteColor]];
+		return;
+	}
+
+	NSColor *bgcolor = [trimmed isEqualToString:[checksumField stringValue]] ? [NSColor greenColor] : [NSColor redColor];
+	[compareField setBackgroundColor:bgcolor];
+}
 
 @end

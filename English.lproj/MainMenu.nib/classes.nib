@@ -19,6 +19,8 @@
 				<string>id</string>
 				<key>pathClicked</key>
 				<string>NSPathControl</string>
+				<key>toggleCompareView</key>
+				<string>NSButton</string>
 			</dict>
 			<key>CLASS</key>
 			<string>AppController</string>
@@ -28,12 +30,14 @@
 			<dict>
 				<key>checksumField</key>
 				<string>NSTextField</string>
-				<key>filenameField</key>
+				<key>compareField</key>
 				<string>NSTextField</string>
+				<key>compareView</key>
+				<string>NSView</string>
+				<key>expandButton</key>
+				<string>NSButton</string>
 				<key>indicator</key>
 				<string>NSProgressIndicator</string>
-				<key>openFile</key>
-				<string>NSButton</string>
 				<key>pathControl</key>
 				<string>NSPathControl</string>
 				<key>popup</key>
