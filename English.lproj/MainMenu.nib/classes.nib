@@ -1,20 +1,53 @@
-{
-    IBClasses = (
-        {
-            ACTIONS = {chooseAlgorithm = id; openFile = id; }; 
-            CLASS = AppController; 
-            LANGUAGE = ObjC; 
-            OUTLETS = {
-                checksumField = NSTextField; 
-                filenameField = NSTextField; 
-                indicator = NSProgressIndicator; 
-                openFile = NSButton; 
-                popup = NSPopUpButton; 
-                window = NSWindow; 
-            }; 
-            SUPERCLASS = NSObject; 
-        }, 
-        {CLASS = FirstResponder; LANGUAGE = ObjC; SUPERCLASS = NSObject; }
-    ); 
-    IBVersion = 1; 
-}
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>IBClasses</key>
+	<array>
+		<dict>
+			<key>CLASS</key>
+			<string>FirstResponder</string>
+			<key>LANGUAGE</key>
+			<string>ObjC</string>
+			<key>SUPERCLASS</key>
+			<string>NSObject</string>
+		</dict>
+		<dict>
+			<key>ACTIONS</key>
+			<dict>
+				<key>chooseAlgorithm</key>
+				<string>id</string>
+				<key>openFile</key>
+				<string>id</string>
+				<key>pathClicked</key>
+				<string>NSPathControl</string>
+			</dict>
+			<key>CLASS</key>
+			<string>AppController</string>
+			<key>LANGUAGE</key>
+			<string>ObjC</string>
+			<key>OUTLETS</key>
+			<dict>
+				<key>checksumField</key>
+				<string>NSTextField</string>
+				<key>filenameField</key>
+				<string>NSTextField</string>
+				<key>indicator</key>
+				<string>NSProgressIndicator</string>
+				<key>openFile</key>
+				<string>NSButton</string>
+				<key>pathControl</key>
+				<string>NSPathControl</string>
+				<key>popup</key>
+				<string>NSPopUpButton</string>
+				<key>window</key>
+				<string>NSWindow</string>
+			</dict>
+			<key>SUPERCLASS</key>
+			<string>NSObject</string>
+		</dict>
+	</array>
+	<key>IBVersion</key>
+	<string>1</string>
+</dict>
+</plist>

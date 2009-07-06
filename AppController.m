@@ -2,14 +2,60 @@
 
 @implementation AppController
 
+
+#pragma mark NSNibAwaking protocol
+
 - (void)awakeFromNib {
-	algorithmTags = [[NSArray arrayWithObjects:@"-md5", @"-md4", @"-md2", @"-sha1", @"-sha", @"-mdc2", @"-ripemd160", nil] retain];
+	algorithmTags = [[NSArray arrayWithObjects:@"-sha1", @"-md5", @"-md4", @"-md2", @"-mdc2", @"-ripemd160", nil] retain];
 	NSArray *dragTypes = [NSArray arrayWithObjects:NSFilenamesPboardType, nil];
 	chosenAlgorithm = [[popup selectedItem] tag];
 	[window registerForDraggedTypes:dragTypes];
+	pathControl.URL = [NSURL fileURLWithPath:[@"~/Desktop/" stringByExpandingTildeInPath]];
 }
 
 
+#pragma mark lifecycle
+
+- (void)dealloc {
+	[algorithmTags release];
+	[super dealloc];
+}
+
+
+#pragma mark open panel handling
+
+- (IBAction)pathClicked:(NSPathControl *)sender {
+	NSPathComponentCell *cell = [sender clickedPathComponentCell];
+	NSLog(@"path clicked: %@, %@", cell.URL, sender.URL);
+
+	NSURL *url = cell.URL ? cell.URL : sender.URL;
+	if (!url) return;
+	NSString *path = [url path];
+	NSString *dir = [path stringByDeletingLastPathComponent];
+	NSString *file = [path lastPathComponent];
+
+	NSOpenPanel *panel = [NSOpenPanel openPanel];
+	[panel setTreatsFilePackagesAsDirectories:YES];
+	[panel beginSheetForDirectory:dir
+							 file:file
+							types:nil
+				   modalForWindow:window
+					modalDelegate:self
+				   didEndSelector:@selector(openPanelDidEnd:returnCode:contextInfo:)
+					  contextInfo:nil];
+}
+
+
+- (void)openPanelDidEnd:(NSOpenPanel *)thePanel returnCode:(int)returnCode contextInfo:(void *)contextInfo {
+	[thePanel close];
+	if (returnCode != NSOKButton) return;
+	[checksumField setStringValue:@""];
+	filename = [[thePanel filenames] objectAtIndex:0];
+	[NSThread detachNewThreadSelector:@selector(processFile) toTarget:self withObject:nil];
+}
+
+
+#pragma mark copy menu command
 // enable copy: menu command only when a checksum is available
 - (BOOL)validateMenuItem:(NSMenuItem *)item {
 	if ([item action] != @selector(copy:)) return YES;
@@ -24,46 +70,18 @@
 }
 
 
+#pragma mark other IBActions
+
 - (IBAction)chooseAlgorithm:(id)sender {
-	if (!filename) return;
 	[checksumField setStringValue:@""];
 	chosenAlgorithm = [[sender selectedItem] tag];
+	if (!filename) return;
 	[self processFile];
 	[self updateUI];
 }
 
 
-- (IBAction)openFile:(id)sender {	
-	NSOpenPanel *panel = [NSOpenPanel openPanel];
-	[panel setTreatsFilePackagesAsDirectories:YES];
-	[panel beginSheetForDirectory:nil
-							 file:nil
-							types:nil
-				   modalForWindow:window
-					modalDelegate:self
-				   didEndSelector:@selector(openPanelDidEnd:returnCode:contextInfo:)
-					  contextInfo:nil];
-}
-
-
-- (void)openPanelDidEnd:(NSOpenPanel *)thePanel returnCode:(int)returnCode  contextInfo:(void  *)contextInfo {
-	[thePanel close];
-	if (returnCode != NSOKButton) return
-	
-	[filenameField setStringValue:@""];
-	[checksumField setStringValue:@""];
-	
-	filename = [[thePanel filenames] objectAtIndex:0];
-	[filenameField setStringValue:filename];
-	
-	[NSThread detachNewThreadSelector:@selector(processFile) toTarget:self withObject:nil];
-}
-
-
-- (IBAction)showHelp:(id)sender {
-	NSLog(@"show help");
-}
-
+#pragma mark hash calculation implementation
 
 - (void)processFile {
 	[popup setEnabled:NO];
@@ -101,7 +119,6 @@
 		[output appendString: [[[NSString alloc] initWithData:data encoding:NSASCIIStringEncoding] autorelease]];
 	}
 
-	// Make sure the task has actually stopped!
     [task terminate];
 
 	firstSpace = [output rangeOfString:@"= "];
@@ -123,6 +140,8 @@
 	[threadPool release];
 }
 
+
+#pragma mark drag and drop handling
 
 - (unsigned int)draggingEntered:(id <NSDraggingInfo>)sender {	
 	NSView *view = [window contentView];
@@ -154,11 +173,16 @@
 }
 
 
-- (void)updateUI {
-	if (filename != nil) {
-		[filenameField setStringValue:filename];
+- (NSDragOperation)pathControl:(NSPathControl *)pathControl validateDrop:(id <NSDraggingInfo>)info {
+	if (![self dragIsFile:info]) {
+		return NSDragOperationNone;
 	}
-	[filenameField setNeedsDisplay:YES];
+	return NSDragOperationGeneric;
+}
+
+
+- (BOOL)pathControl:(NSPathControl *)pathControl acceptDrop:(id <NSDraggingInfo>)info {
+	return [self performDragOperation:info];
 }
 
 
@@ -188,9 +212,12 @@
 }
 
 
-- (void)dealloc {
-	[algorithmTags release];
-	[super dealloc];
+#pragma mark UI updating
+
+- (void)updateUI {
+	if (filename != nil) {
+		pathControl.URL = [NSURL fileURLWithPath:filename];
+	}
 }
 
 
