@@ -249,13 +249,15 @@
 	BOOL buttonIsDisclosed = [expandButton intValue];
 	BOOL isExpanded = ![compareView isHidden];
 	if (buttonIsDisclosed == isExpanded) return;
-	
+
 	int delta = buttonIsDisclosed ? 30 : -30;
 
 	NSRect frame = window.frame;
 	frame.size.height += delta;
 	frame.origin.y -= delta;
-	[window setFrame:frame display:YES animate:YES];
+//	[window setFrame:frame display:YES animate:YES];
+//	[NSAnimationContext beginGrouping];
+	[[window animator] setFrame:frame display:NO];
 	
 	NSSize size = window.maxSize;
 	size.height += delta;
@@ -265,7 +267,19 @@
 	size.height += delta;
 	window.minSize = size;
 	
-	[compareView setHidden:!buttonIsDisclosed];
+	[[compareView animator] setHidden:!buttonIsDisclosed];
+//	[compareView setHidden:!buttonIsDisclosed];
+	
+//	[NSAnimationContext endGrouping];
+
+	
+//	NSDictionary *windowAnimation = [NSDictionary dictionaryWithObjectsAndKeys:window, NSViewAnimationTargetKey, [NSValue valueWithRect:frame], NSViewAnimationEndFrameKey, nil];
+//	NSString *effect = buttonIsDisclosed ? NSViewAnimationFadeInEffect : NSViewAnimationFadeOutEffect;
+//	NSDictionary *viewAnimation = [NSDictionary dictionaryWithObjectsAndKeys:compareView, NSViewAnimationTargetKey, effect, NSViewAnimationEffectKey, nil];
+
+//	NSViewAnimation *animation = [[[NSViewAnimation alloc] initWithViewAnimations:[NSArray arrayWithObjects:windowAnimation, viewAnimation, nil]] autorelease];
+//	[animation setDuration:0.2];
+//	[animation startAnimation];
 
 }
 
