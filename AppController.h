@@ -10,13 +10,21 @@
 	IBOutlet NSPathControl *pathControl;
 	IBOutlet NSView *compareView;
 	IBOutlet NSButton *expandButton;
+	IBOutlet NSButton *refreshButton;
 	NSArray *algorithmTags;
 	NSString *filename;
 	int chosenAlgorithm;
 	NSString *compareChecksum;
+	int runningAnimationCount;
 }
 
 @property (retain) NSString *compareChecksum;
+
+- (IBAction)chooseAlgorithm:(id)sender;
+- (IBAction)calculateChecksum:(id)sender;
+- (IBAction)pathClicked:(NSPathControl *)sender;
+- (IBAction)toggleCompareView:(NSButton *)sender;
+- (IBAction)selectChecksumField:(id)sender;
 
 - (void)processFile;
 - (void)processFileBackground;
@@ -24,9 +32,8 @@
 - (void)updateUI;
 - (void)updateCompareExpanded;
 - (void)checkCompareChecksum;
-- (IBAction)chooseAlgorithm:(id)sender;
-- (IBAction)pathClicked:(NSPathControl *)sender;
-- (IBAction)toggleCompareView:(NSButton *)sender;
 - (BOOL)dragIsFile:(id <NSDraggingInfo>)sender;
 - (NSString *)getFileForDrag:(id <NSDraggingInfo>)sender;
+- (void)setUiEnabled:(BOOL)state;
+
 @end

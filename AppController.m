@@ -1,9 +1,11 @@
 #import "AppController.h"
 
+
 @implementation AppController
 
 @synthesize compareChecksum;
 
+#define WINDOW_EXPANSION_DELTA_Y 35
 
 #pragma mark NSNibAwaking protocol
 
@@ -13,7 +15,8 @@
 	chosenAlgorithm = [[popup selectedItem] tag];
 	[window registerForDraggedTypes:dragTypes];
 	pathControl.URL = [NSURL fileURLWithPath:[@"~/Desktop/" stringByExpandingTildeInPath]];
-	[self updateCompareExpanded];
+//	[self updateCompareExpanded];
+	[self updateUI];
 }
 
 
@@ -25,6 +28,7 @@
 	[super dealloc];
 }
 
+#pragma mark accessors
 
 - (void)setCompareChecksum:(NSString *)value {
 	if (compareChecksum != value) {
@@ -39,7 +43,6 @@
 
 - (IBAction)pathClicked:(NSPathControl *)sender {
 	NSPathComponentCell *cell = [sender clickedPathComponentCell];
-	NSLog(@"path clicked: %@, %@", cell.URL, sender.URL);
 
 	NSURL *url = cell.URL ? cell.URL : sender.URL;
 	if (!url) return;
@@ -85,19 +88,28 @@
 
 #pragma mark other IBActions
 
-- (IBAction)chooseAlgorithm:(id)sender {
+- (IBAction)calculateChecksum:(id)sender {
 	[checksumField setStringValue:@""];
-	chosenAlgorithm = [[sender selectedItem] tag];
 	if (!filename) return;
-	[self processFile];
 	[self updateUI];
+	[self processFile];
+}
+
+- (IBAction)chooseAlgorithm:(id)sender {
+	chosenAlgorithm = [[sender selectedItem] tag];
+	[self calculateChecksum:sender];
 }
 
 
 - (IBAction)toggleCompareView:(NSButton *)sender {
+	[expandButton setEnabled:NO];
 	[self updateCompareExpanded];
 }
 
+
+- (IBAction)selectChecksumField:(id)sender {
+	NSLog(@"selected");
+}
 
 
 
@@ -106,8 +118,7 @@
 //  UI update on main thread
 - (void)processFile {
 	if (filename == nil) return;
-	[pathControl setEnabled:NO];
-	[popup setEnabled:NO];
+	[self setUiEnabled:NO];
 	[indicator startAnimation:self];
 	[checksumField setStringValue:@"calculating..."];
 	[self performSelectorInBackground:@selector(processFileBackground) withObject:nil];
@@ -157,10 +168,19 @@
 	result = [result stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
 	[checksumField setStringValue:result];
 	[indicator stopAnimation:self];
+	[self setUiEnabled:YES];
 	[self updateUI];
-	[popup setEnabled:YES];
-	[pathControl setEnabled:YES];
+	[checksumField selectText:self];
 }
+
+
+- (void)setUiEnabled:(BOOL)state {
+	[popup setEnabled:state];
+	[pathControl setEnabled:state];
+	[refreshButton setEnabled:state];
+}
+
+
 
 
 #pragma mark drag and drop handling
@@ -224,7 +244,7 @@
 	props = [pb propertyListForType:availableType];
 	dragFilename = [props objectAtIndex:0];
 
-	return dragFilename;	
+	return dragFilename;
 }
 
 
@@ -236,8 +256,11 @@
 #pragma mark UI updating
 
 - (void)updateUI {
-	if (filename != nil) {
+	if (filename) {
 		pathControl.URL = [NSURL fileURLWithPath:filename];
+		[refreshButton setEnabled:YES];
+	} else {
+		[refreshButton setEnabled:NO];
 	}
 	[self updateCompareExpanded];
 	[self checkCompareChecksum];
@@ -245,20 +268,13 @@
 
 
 - (void)updateCompareExpanded {
-
 	BOOL buttonIsDisclosed = [expandButton intValue];
 	BOOL isExpanded = ![compareView isHidden];
 	if (buttonIsDisclosed == isExpanded) return;
+	if (runningAnimationCount > 0) return;
 
-	int delta = buttonIsDisclosed ? 30 : -30;
+	int delta = buttonIsDisclosed ? WINDOW_EXPANSION_DELTA_Y : -WINDOW_EXPANSION_DELTA_Y;
 
-	NSRect frame = window.frame;
-	frame.size.height += delta;
-	frame.origin.y -= delta;
-
-	[[NSAnimationContext currentContext] setDuration:0.2];
-	[[window animator] setFrame:frame display:YES];
-	
 	NSSize size = window.maxSize;
 	size.height += delta;
 	window.maxSize = size;
@@ -266,10 +282,40 @@
 	size = window.minSize;
 	size.height += delta;
 	window.minSize = size;
-	
-	[compareView setHidden:!buttonIsDisclosed];
 
+	NSRect frame = window.frame;
+	frame.size.height += delta;
+	frame.origin.y -= delta;
+
+	NSDictionary *windowEffects = [NSDictionary dictionaryWithObjectsAndKeys:
+		window, NSViewAnimationTargetKey,
+		[NSValue valueWithRect:frame], NSViewAnimationEndFrameKey,
+		nil
+	];
+	NSViewAnimation *windowAnimation = [[NSViewAnimation alloc] initWithViewAnimations:[NSArray arrayWithObjects:windowEffects, nil]];
+	[windowAnimation setDuration:0.2];
+	[windowAnimation setDelegate:self];
+
+	NSDictionary *viewEffects = [NSDictionary dictionaryWithObjectsAndKeys:
+		compareView, NSViewAnimationTargetKey,
+		(buttonIsDisclosed ? NSViewAnimationFadeInEffect : NSViewAnimationFadeOutEffect), NSViewAnimationEffectKey,
+		nil
+	];
+	NSViewAnimation *viewAnimation = [[NSViewAnimation alloc] initWithViewAnimations:[NSArray arrayWithObjects:viewEffects, nil]];
+	[viewAnimation setDuration:0.2];
+	[viewAnimation setDelegate:self];
+
+	NSAnimation *first = windowAnimation, *second = viewAnimation;
+	if (!buttonIsDisclosed) {
+		// reverse the order when collapsing
+		first = viewAnimation;
+		second = windowAnimation;
+	}
+	
+	[second startWhenAnimation:first reachesProgress:1.0];
+	[first startAnimation];
 }
+
 
 
 - (void)checkCompareChecksum {
@@ -280,8 +326,35 @@
 		return;
 	}
 
-	NSColor *bgcolor = [trimmed isEqualToString:[checksumField stringValue]] ? [NSColor greenColor] : [NSColor redColor];
-	[compareField setBackgroundColor:bgcolor];
+	BOOL checksumsMatch = [trimmed isEqualToString:[checksumField stringValue]];
+	NSColor *bgcolor = checksumsMatch ? [NSColor greenColor] : [NSColor redColor];
+	[compareField setBackgroundColor:[bgcolor highlightWithLevel:0.7]];
 }
+
+
+
+# pragma mark NSAnimation delegate methods
+
+- (BOOL)animationShouldStart:(NSAnimation *)animation {
+	runningAnimationCount++;
+	return YES;
+}
+
+
+- (void)animationDidEnd:(NSAnimation *)animation {
+	runningAnimationCount--;
+	if (runningAnimationCount == 0) [expandButton setEnabled:YES];
+	[animation release];
+}
+
+#pragma mark NSText delegate methods
+
+- (void)textDidBeginEditing:(NSNotification *)aNotification {
+	NSLog(@"begin edit");
+}
+
+
+
+
 
 @end
