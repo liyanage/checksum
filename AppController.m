@@ -19,6 +19,14 @@
 	[self updateUI];
 }
 
+#pragma mark NSApplicationDelegate protocol
+
+- (BOOL)application:(NSApplication *)theApplication openFile:(NSString *)aFilename
+{
+	filename = aFilename;
+	[self processFile];
+	return YES;
+}
 
 #pragma mark lifecycle
 
