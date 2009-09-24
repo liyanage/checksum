@@ -185,7 +185,7 @@
 
 #pragma mark drag and drop handling
 
-- (unsigned int)draggingEntered:(id <NSDraggingInfo>)sender {	
+- (NSDragOperation)draggingEntered:(id <NSDraggingInfo>)sender {	
 	NSView *view = [window contentView];
 
 	if (![self dragIsFile:sender]) {
