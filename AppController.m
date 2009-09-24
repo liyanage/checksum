@@ -23,7 +23,7 @@
 
 - (BOOL)application:(NSApplication *)theApplication openFile:(NSString *)aFilename
 {
-	filename = aFilename;
+	[self setValue:aFilename forKey:@"filename"];
 	[self processFile];
 	return YES;
 }
@@ -33,6 +33,7 @@
 - (void)dealloc {
 	[algorithmTags release];
 	[compareChecksum release];
+	[filename release];
 	[super dealloc];
 }
 
@@ -74,7 +75,7 @@
 	[thePanel close];
 	if (returnCode != NSOKButton) return;
 	[checksumField setStringValue:@""];
-	filename = [[thePanel filenames] objectAtIndex:0];
+	[self setValue:[[thePanel filenames] objectAtIndex:0] forKey:@"filename"];
 	[self processFile];
 }
 
@@ -125,7 +126,7 @@
 
 //  UI update on main thread
 - (void)processFile {
-	if (filename == nil) return;
+	if (!filename) return;
 	[self setUiEnabled:NO];
 	[indicator startAnimation:self];
 	[checksumField setStringValue:@"calculating..."];
@@ -136,7 +137,6 @@
 //  calculation on background thread
 - (void)processFileBackground {
 	NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
-
     NSTask *task = [[[NSTask alloc] init] autorelease];
     [task setStandardOutput: [NSPipe pipe]];
     [task setStandardError: [task standardOutput]];
@@ -214,7 +214,7 @@
 
 
 - (BOOL)performDragOperation:(id <NSDraggingInfo>)sender {
-	filename = [self getFileForDrag:sender];
+	[self setValue:[self getFileForDrag:sender] forKey:@"filename"];
 	[[window contentView] setNeedsDisplay:YES];
 	[self processFile];
 	[self updateUI];
