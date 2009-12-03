@@ -1,6 +1,5 @@
 #import "AppController.h"
 
-
 @implementation AppController
 
 @synthesize compareChecksum;
@@ -124,20 +123,19 @@
 
 #pragma mark hash calculation implementation
 
-//  UI update on main thread
 - (void)processFile {
 	if (!filename) return;
+	if (task) return;
 	[self setUiEnabled:NO];
 	[indicator startAnimation:self];
 	[checksumField setStringValue:@"calculating..."];
-	[self performSelectorInBackground:@selector(processFileBackground) withObject:nil];
+
+	[self processFileBackground];
 }
 
 
-//  calculation on background thread
 - (void)processFileBackground {
-	NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
-    NSTask *task = [[[NSTask alloc] init] autorelease];
+    task = [[NSTask alloc] init];
     [task setStandardOutput: [NSPipe pipe]];
     [task setStandardError: [task standardOutput]];
     [task setLaunchPath:@"/usr/bin/env"];
@@ -150,28 +148,32 @@
 			nil
 		]
 	];
-    [task launch];
 
-    NSData *data;
-	NSMutableString *output = [[[NSMutableString alloc] init] autorelease];
-	while ((data = [[[task standardOutput] fileHandleForReading] availableData]) && [data length]) {
-		[output appendString: [[[NSString alloc] initWithData:data encoding:NSASCIIStringEncoding] autorelease]];
-	}
-
-    [task terminate];
-
-	NSRange firstSpace = [output rangeOfString:@"= "];
-	NSString *result = output;
-	if (firstSpace.location && firstSpace.length) {
-		result = [output substringFromIndex:firstSpace.location + 2];
-	}
-	
-	[self performSelectorOnMainThread:@selector(handleProcessFileResult:) withObject:result waitUntilDone:YES];
-	[pool release];
+	[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(taskDidTerminate:) name:NSTaskDidTerminateNotification object:task];
+	[task launch];
 }
 
 
-//  UI update on main thread again
+- (void)taskDidTerminate:(NSNotification *)notification
+{
+//	NSLog(@"task did terminate: %@, mainthread %d, status %d", notification, [[NSThread currentThread] isMainThread], [task terminationStatus]);
+	NSString *result = @"";
+	if ([task terminationStatus] == 0) {
+		NSData *data = [[[task standardOutput] fileHandleForReading] availableData];
+		NSString *output = [[[NSString alloc] initWithData:data encoding:NSASCIIStringEncoding] autorelease];
+		NSRange firstSpace = [output rangeOfString:@"= "];
+		result = output;
+		if (firstSpace.location && firstSpace.length) {
+			result = [output substringFromIndex:firstSpace.location + 2];
+		}
+	}
+	[[NSNotificationCenter defaultCenter] removeObserver:self name:NSTaskDidTerminateNotification object:task];
+	[task release];
+	task = nil;
+	[self handleProcessFileResult:result];
+}
+
+
 - (void)handleProcessFileResult:(NSString *)result {
 	result = [result stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
 	[checksumField setStringValue:result];
@@ -185,15 +187,25 @@
 - (void)setUiEnabled:(BOOL)state {
 	[popup setEnabled:state];
 	[pathControl setEnabled:state];
-	[refreshButton setEnabled:state];
+	[refreshButton setAction:state ? @selector(calculateChecksum:) : @selector(cancelTask:)];
+	[refreshButton setImage:[NSImage imageNamed:state ? @"NSRefreshFreestandingTemplate" : @"NSStopProgressFreestandingTemplate"]];
 }
 
+- (void)cancelTask:(id)sender
+{
+	[task terminate];
+}
 
 
 
 #pragma mark drag and drop handling
 
 - (NSDragOperation)draggingEntered:(id <NSDraggingInfo>)sender {	
+
+	if (task) {
+		return NSDragOperationNone;
+	}
+	
 	NSView *view = [window contentView];
 
 	if (![self dragIsFile:sender]) {
@@ -223,7 +235,7 @@
 
 
 - (NSDragOperation)pathControl:(NSPathControl *)pathControl validateDrop:(id <NSDraggingInfo>)info {
-	if (![self dragIsFile:info]) {
+	if (task || ![self dragIsFile:info]) {
 		return NSDragOperationNone;
 	}
 	return NSDragOperationGeneric;

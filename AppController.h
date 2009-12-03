@@ -16,6 +16,7 @@
 	int chosenAlgorithm;
 	NSString *compareChecksum;
 	int runningAnimationCount;
+	NSTask *task;
 }
 
 @property (retain) NSString *compareChecksum;
@@ -35,5 +36,7 @@
 - (BOOL)dragIsFile:(id <NSDraggingInfo>)sender;
 - (NSString *)getFileForDrag:(id <NSDraggingInfo>)sender;
 - (void)setUiEnabled:(BOOL)state;
+- (void)taskDidTerminate:(NSNotification *)notification;
+- (void)cancelTask:(id)sender;
 
 @end
