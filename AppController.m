@@ -153,7 +153,6 @@
 	[task launch];
 }
 
-
 - (void)taskDidTerminate:(NSNotification *)notification
 {
 //	NSLog(@"task did terminate: %@, mainthread %d, status %d", notification, [[NSThread currentThread] isMainThread], [task terminationStatus]);
@@ -173,7 +172,6 @@
 	[self handleProcessFileResult:result];
 }
 
-
 - (void)handleProcessFileResult:(NSString *)result {
 	result = [result stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
 	[checksumField setStringValue:result];
@@ -181,14 +179,6 @@
 	[self setUiEnabled:YES];
 	[self updateUI];
 	[checksumField selectText:self];
-}
-
-
-- (void)setUiEnabled:(BOOL)state {
-	[popup setEnabled:state];
-	[pathControl setEnabled:state];
-	[refreshButton setAction:state ? @selector(calculateChecksum:) : @selector(cancelTask:)];
-	[refreshButton setImage:[NSImage imageNamed:state ? @"NSRefreshFreestandingTemplate" : @"NSStopProgressFreestandingTemplate"]];
 }
 
 - (void)cancelTask:(id)sender
@@ -351,6 +341,14 @@
 	[compareField setBackgroundColor:[bgcolor highlightWithLevel:0.7]];
 }
 
+
+- (void)setUiEnabled:(BOOL)state {
+	[popup setEnabled:state];
+	[pathControl setEnabled:state];
+	[refreshButton setAction:state ? @selector(calculateChecksum:) : @selector(cancelTask:)];
+	[refreshButton setImage:[NSImage imageNamed:state ? @"NSRefreshFreestandingTemplate" : @"NSStopProgressFreestandingTemplate"]];
+	[checksumField setEditable:state];
+}
 
 
 # pragma mark NSAnimation delegate methods
