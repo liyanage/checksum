@@ -11,7 +11,7 @@
 	IBOutlet NSView *compareView;
 	IBOutlet NSButton *expandButton;
 	IBOutlet NSButton *refreshButton;
-	NSArray *algorithmTags;
+	NSMutableArray *algorithmTags;
 	NSString *filename;
 	int chosenAlgorithm;
 	NSString *compareChecksum;

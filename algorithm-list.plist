@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<array>
+	<dict>
+		<key>name</key>
+		<string>SHA1</string>
+		<key>openssl option</key>
+		<string>-sha1</string>
+		<key>minimum appkit version</key>
+		<real>949</real>
+	</dict>
+	<dict>
+		<key>name</key>
+		<string>SHA256</string>
+		<key>openssl option</key>
+		<string>-sha256</string>
+		<key>minimum appkit version</key>
+		<real>1000</real>
+	</dict>
+	<dict>
+		<key>name</key>
+		<string>MD5</string>
+		<key>openssl option</key>
+		<string>-md5</string>
+		<key>minimum appkit version</key>
+		<real>949</real>
+	</dict>
+	<dict>
+		<key>name</key>
+		<string>MD4</string>
+		<key>openssl option</key>
+		<string>-md4</string>
+		<key>minimum appkit version</key>
+		<real>949</real>
+	</dict>
+	<dict>
+		<key>name</key>
+		<string>MD2</string>
+		<key>openssl option</key>
+		<string>-md2</string>
+		<key>minimum appkit version</key>
+		<real>949</real>
+	</dict>
+	<dict>
+		<key>name</key>
+		<string>MDC2</string>
+		<key>openssl option</key>
+		<string>-mdc2</string>
+		<key>minimum appkit version</key>
+		<real>949</real>
+	</dict>
+	<dict>
+		<key>name</key>
+		<string>RIPEMD160</string>
+		<key>openssl option</key>
+		<string>-ripemd160</string>
+		<key>minimum appkit version</key>
+		<real>949</real>
+	</dict>
+</array>
+</plist>

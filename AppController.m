@@ -4,17 +4,45 @@
 
 @synthesize compareChecksum;
 
+extern const double ChecksumVersionNumber;
+
 #define WINDOW_EXPANSION_DELTA_Y 35
+
+// from http://imedia.googlecode.com/svn-history/r882/trunk/IMBCommon.h
+#ifndef NSAppKitVersionNumber10_6
+#define NSAppKitVersionNumber10_6 1000f
+#endif
 
 #pragma mark NSNibAwaking protocol
 
 - (void)awakeFromNib {
-	algorithmTags = [[NSArray arrayWithObjects:@"-sha1", @"-md5", @"-md4", @"-md2", @"-mdc2", @"-ripemd160", nil] retain];
+
+	NSString *path = [[NSBundle mainBundle] pathForResource:@"algorithm-list" ofType:@"plist"];
+	NSArray *algorithms = [NSArray arrayWithContentsOfFile:path];
+	NSInteger index = 0;
+	algorithmTags = [[NSMutableArray alloc] init];
+	[[popup menu] removeItemAtIndex:0];
+	for (NSDictionary *algorithm in algorithms) {
+		double minAppkitVersion = [[algorithm objectForKey:@"minimum appkit version"] doubleValue];
+		if (NSAppKitVersionNumber < minAppkitVersion) 
+			continue;
+		NSString *name = [algorithm objectForKey:@"name"];
+		NSMenuItem *item = [[NSMenuItem alloc] initWithTitle:name action:nil keyEquivalent:@""];
+		[item setTag:index++];
+		[[popup menu] addItem:item];
+		[item release];
+		NSString *openSSLOption = [algorithm objectForKey:@"openssl option"];
+		[algorithmTags addObject:openSSLOption];
+	}
+
 	NSArray *dragTypes = [NSArray arrayWithObjects:NSFilenamesPboardType, nil];
 	chosenAlgorithm = [[popup selectedItem] tag];
 	[window registerForDraggedTypes:dragTypes];
 	pathControl.URL = [NSURL fileURLWithPath:[@"~/Desktop/" stringByExpandingTildeInPath]];
-//	[self updateCompareExpanded];
+
+	NSInteger selectedAlgorithm = [[NSUserDefaults standardUserDefaults] integerForKey:@"selectedAlgorithm"];
+	[[popup cell] selectItemAtIndex:selectedAlgorithm];
+	
 	[self updateUI];
 }
 
