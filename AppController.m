@@ -17,24 +17,10 @@ extern const double ChecksumVersionNumber;
 
 - (void)awakeFromNib {
 
-	NSString *path = [[NSBundle mainBundle] pathForResource:@"algorithm-list" ofType:@"plist"];
-	NSArray *algorithms = [NSArray arrayWithContentsOfFile:path];
-	NSInteger index = 0;
-	algorithmTags = [[NSMutableArray alloc] init];
-	[[popup menu] removeItemAtIndex:0];
-	for (NSDictionary *algorithm in algorithms) {
-		double minAppkitVersion = [[algorithm objectForKey:@"minimum appkit version"] doubleValue];
-		if (NSAppKitVersionNumber < minAppkitVersion) 
-			continue;
-		NSString *name = [algorithm objectForKey:@"name"];
-		NSMenuItem *item = [[NSMenuItem alloc] initWithTitle:name action:nil keyEquivalent:@""];
-		[item setTag:index++];
-		[[popup menu] addItem:item];
-		[item release];
-		NSString *openSSLOption = [algorithm objectForKey:@"openssl option"];
-		[algorithmTags addObject:openSSLOption];
-	}
+	[[NSUserDefaults standardUserDefaults] registerDefaults:[NSDictionary dictionaryWithObjectsAndKeys:[NSKeyedArchiver archivedDataWithRootObject:[NSURL fileURLWithPath:@"/usr/bin/openssl"]], @"opensslBinaryPath", nil]];
 
+	[self setupAlgorithmsPopup];
+	
 	NSArray *dragTypes = [NSArray arrayWithObjects:NSFilenamesPboardType, nil];
 	chosenAlgorithm = [[popup selectedItem] tag];
 	[window registerForDraggedTypes:dragTypes];
@@ -45,6 +31,35 @@ extern const double ChecksumVersionNumber;
 	
 	[self updateUI];
 }
+
+- (void)setupAlgorithmsPopup
+{
+	NSString *path = [[NSBundle mainBundle] pathForResource:@"algorithm-list" ofType:@"plist"];
+	NSArray *algorithms = [NSArray arrayWithContentsOfFile:path];
+	algorithmTags = [[NSMutableArray alloc] init];
+	[[popup menu] removeItemAtIndex:0];
+
+	NSString *opensslPath = [self opensslPath];
+	
+	NSInteger index = 0;
+	for (NSDictionary *algorithm in algorithms) {
+		NSString *openSSLOption = [algorithm objectForKey:@"openssl option"];
+
+		NSTask *checkTask = [NSTask launchedTaskWithLaunchPath:opensslPath arguments:[NSArray arrayWithObjects:@"dgst", openSSLOption, @"/dev/null", nil]];
+		[checkTask waitUntilExit];
+		if ([checkTask terminationStatus])
+			continue; // Non-zero exit status, this algorithm is not available
+
+		[algorithmTags addObject:openSSLOption];
+
+		NSString *name = [algorithm objectForKey:@"name"];
+		NSMenuItem *item = [[NSMenuItem alloc] initWithTitle:name action:nil keyEquivalent:@""];
+		[item setTag:index++];
+		[[popup menu] addItem:item];
+		[item release];
+	}
+}
+
 
 #pragma mark NSApplicationDelegate protocol
 
@@ -98,6 +113,12 @@ extern const double ChecksumVersionNumber;
 }
 
 
+- (NSString *)opensslPath
+{
+	return [[NSKeyedUnarchiver unarchiveObjectWithData:[[NSUserDefaults standardUserDefaults] dataForKey:@"opensslBinaryPath"]] path];
+}
+
+
 - (void)openPanelDidEnd:(NSOpenPanel *)thePanel returnCode:(int)returnCode contextInfo:(void *)contextInfo {
 	[thePanel close];
 	if (returnCode != NSOKButton) return;
@@ -143,9 +164,9 @@ extern const double ChecksumVersionNumber;
 }
 
 
-- (IBAction)selectChecksumField:(id)sender {
-	NSLog(@"selected");
-}
+//- (IBAction)selectChecksumField:(id)sender {
+//	NSLog(@"selected");
+//}
 
 
 
@@ -166,10 +187,10 @@ extern const double ChecksumVersionNumber;
     task = [[NSTask alloc] init];
     [task setStandardOutput: [NSPipe pipe]];
     [task setStandardError: [task standardOutput]];
-    [task setLaunchPath:@"/usr/bin/env"];
+
+    [task setLaunchPath:[self opensslPath]];
 	[task setArguments:
 		[NSArray arrayWithObjects:
-			@"openssl",
 			@"dgst",
 			[algorithmTags objectAtIndex:chosenAlgorithm],
 			filename,
@@ -395,9 +416,9 @@ extern const double ChecksumVersionNumber;
 
 #pragma mark NSText delegate methods
 
-- (void)textDidBeginEditing:(NSNotification *)aNotification {
-	NSLog(@"begin edit");
-}
+//- (void)textDidBeginEditing:(NSNotification *)aNotification {
+//	NSLog(@"begin edit");
+//}
 
 
 

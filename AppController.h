@@ -25,7 +25,7 @@
 - (IBAction)calculateChecksum:(id)sender;
 - (IBAction)pathClicked:(NSPathControl *)sender;
 - (IBAction)toggleCompareView:(NSButton *)sender;
-- (IBAction)selectChecksumField:(id)sender;
+//- (IBAction)selectChecksumField:(id)sender;
 
 - (void)processFile;
 - (void)processFileBackground;
@@ -38,5 +38,7 @@
 - (void)setUiEnabled:(BOOL)state;
 - (void)taskDidTerminate:(NSNotification *)notification;
 - (void)cancelTask:(id)sender;
+- (void)setupAlgorithmsPopup;
+- (NSString *)opensslPath;
 
 @end
