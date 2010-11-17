@@ -61,6 +61,14 @@ extern const double ChecksumVersionNumber;
 }
 
 
+#pragma mark NSWindowDelegate protocol
+
+- (void)windowWillClose:(NSNotification *)notification
+{
+	[NSApp terminate:nil];
+}
+
+
 #pragma mark NSApplicationDelegate protocol
 
 - (BOOL)application:(NSApplication *)theApplication openFile:(NSString *)aFilename

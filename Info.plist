@@ -38,7 +38,7 @@
 	<key>CFBundleExecutable</key>
 	<string>Checksum</string>
 	<key>CFBundleGetInfoString</key>
-	<string>Checksum version ${CURRENT_PROJECT_VERSION}, Copyright 2002-2009 Marc Liyanage, www.entropy.ch</string>
+	<string>Checksum version ${CURRENT_PROJECT_VERSION}, Copyright 2002-2010 Marc Liyanage, www.entropy.ch</string>
 	<key>CFBundleIconFile</key>
 	<string>Icon</string>
 	<key>CFBundleIdentifier</key>
@@ -56,7 +56,7 @@
 	<key>LSMinimumSystemVersion</key>
 	<string>10.5.0</string>
 	<key>NSHumanReadableCopyright</key>
-	<string>Copyright 2002-2009 Marc Liyanage</string>
+	<string>Copyright 2002-2010 Marc Liyanage</string>
 	<key>NSMainNibFile</key>
 	<string>MainMenu</string>
 	<key>NSPrincipalClass</key>

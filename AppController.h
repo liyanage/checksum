@@ -19,7 +19,7 @@
 	NSTask *task;
 }
 
-@property (retain) NSString *compareChecksum;
+@property (retain, nonatomic) NSString *compareChecksum;
 
 - (IBAction)chooseAlgorithm:(id)sender;
 - (IBAction)calculateChecksum:(id)sender;
